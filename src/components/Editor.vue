@@ -1,15 +1,18 @@
 <template>
-  <div ref="editor" style="margin-bottom: 23px"></div>
+  <div id="editor" ref="editor" style="margin-bottom: 23px"></div>
   <div ref="content"></div>
 </template>
 
 <script>
-import { EditorState } from "prosemirror-state";
+import { EditorState, Plugin } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { Schema, DOMParser } from "prosemirror-model";
 import { schema } from "prosemirror-schema-basic";
 import { addListNodes } from "prosemirror-schema-list";
 import { exampleSetup } from "prosemirror-example-setup";
+import { keymap } from "prosemirror-keymap";
+import SelectionSizeTooltip from "../plugins/selection";
+import RunHighlight from "../plugins/runhighlight";
 
 const mySchema = new Schema({
   nodes: addListNodes(schema.spec.nodes, "paragraph block*", "block"),
@@ -19,10 +22,26 @@ const mySchema = new Schema({
 export default {
   name: "Editor",
   mounted() {
+    // const textSchema = new Schema({
+    //   nodes: {
+    //     text: {},
+    //     doc: {content: "text*"}
+    //   }
+    // })
+
+    let selectionSizePlugin = new Plugin({
+      view(editorView) {
+        return new SelectionSizeTooltip(editorView);
+      },
+    });
+
     window.view = new EditorView(this.$refs.editor, {
       state: EditorState.create({
         doc: DOMParser.fromSchema(mySchema).parse(this.$refs.content),
-        plugins: exampleSetup({ schema: mySchema }),
+        plugins: exampleSetup({ schema: mySchema }).concat([
+          selectionSizePlugin,
+          keymap({ "Mod-u": RunHighlight }),
+        ]),
       }),
     });
   },
@@ -30,6 +49,58 @@ export default {
 </script>
 
 <style>
+.highlight {
+  display: block;
+  position: fixed;
+  left: 0;
+  top: -20px;
+  background-color: #ffee51;
+  height: 20px;
+  opacity: 0.3;
+  z-index: 0;
+  transition: all 0.4s ease;
+}
+
+.tooltip {
+  position: absolute;
+  pointer-events: none;
+  z-index: 20;
+  background: white;
+  border: 1px solid silver;
+  border-radius: 2px;
+  padding: 2px 10px;
+  margin-bottom: 7px;
+  -webkit-transform: translateX(-50%);
+  transform: translateX(-50%);
+}
+.tooltip:before {
+  content: "";
+  height: 0;
+  width: 0;
+  position: absolute;
+  left: 50%;
+  margin-left: -5px;
+  bottom: -6px;
+  border: 5px solid transparent;
+  border-bottom-width: 0;
+  border-top-color: silver;
+}
+.tooltip:after {
+  content: "";
+  height: 0;
+  width: 0;
+  position: absolute;
+  left: 50%;
+  margin-left: -5px;
+  bottom: -4.5px;
+  border: 5px solid transparent;
+  border-bottom-width: 0;
+  border-top-color: white;
+}
+#editor {
+  position: relative;
+}
+
 .ProseMirror {
   position: relative;
 }

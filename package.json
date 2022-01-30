@@ -9,7 +9,9 @@
   },
   "dependencies": {
     "core-js": "^3.6.5",
+    "prosemirror-commands": "^1.2.1",
     "prosemirror-example-setup": "^1.1.2",
+    "prosemirror-keymap": "^1.1.5",
     "prosemirror-markdown": "^1.7.0",
     "prosemirror-model": "^1.16.1",
     "prosemirror-schema-basic": "^1.1.2",
